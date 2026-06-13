@@ -1,0 +1,9 @@
+# Scanora — Dependencies
+# This project uses Node.js (JavaScript), not Python.
+# Run "npm install" to install all dependencies.
+# The equivalent of requirements.txt is package.json (included in repo).
+
+# npm packages:
+@anthropic-ai/sdk==0.20.0
+@supabase/supabase-js==2.39.0
+node-fetch==3.3.0
