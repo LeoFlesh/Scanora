@@ -8,7 +8,7 @@ Scanora helps college students and young adults figure out what to cook based on
 
 ## Live Demo
 
-[https://scanora.vercel.app](https://scanora.vercel.app)
+[https://scanora-six.vercel.app](https://scanora-six.vercel.app)
 
 ---
 
