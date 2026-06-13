@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanora</title>
+  <style>
+    :root {
+      --green: #4caf50;
+      --green-dark: #2f7d32;
+      --green-soft: #eaf7eb;
+      --yellow: #f7b731;
+      --yellow-soft: #fff7df;
+      --red: #e5534b;
+      --red-soft: #fff0ef;
+      --ink: #1f2933;
+      --muted: #687786;
+      --line: #dde7df;
+      --card: #ffffff;
+      --bg: #f7faf8;
+      --shadow: 0 10px 28px rgba(31, 41, 51, 0.08);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+
+    button, input, select { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: 0.72; }
+
+    a {
+      color: var(--green-dark);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .app-shell { min-height: 100vh; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px clamp(16px, 4vw, 40px);
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      color: #fff;
+      background: var(--green);
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+      letter-spacing: 0;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px;
+      background: #edf4ef;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .tab-button {
+      padding: 9px 14px;
+      color: var(--muted);
+      background: transparent;
+      border-radius: 7px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tab-button.active {
+      color: var(--green-dark);
+      background: #fff;
+      box-shadow: 0 3px 12px rgba(31, 41, 51, 0.08);
+    }
+
+    .settings-button {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      color: var(--green-dark);
+      background: var(--green-soft);
+      border: 1px solid #cbe8cf;
+      border-radius: 8px;
+      font-size: 1.25rem;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 16px 0 48px;
+    }
+
+    .household-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .household-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .household-title {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 900;
+    }
+
+    .invite-code {
+      padding: 5px 8px;
+      color: var(--green-dark);
+      background: var(--green-soft);
+      border: 1px solid #cbe8cf;
+      border-radius: 7px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .join-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .join-row input {
+      width: 150px;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-transform: uppercase;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .toolbar, .recipes-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .toolbar h2, .recipes-head h2, .planner-head h2 {
+      margin: 0 0 4px;
+      font-size: clamp(1.35rem, 2.4vw, 2rem);
+    }
+
+    .toolbar p, .recipes-head p, .planner-head p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .primary, .secondary, .danger, .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 9px 13px;
+      border-radius: 8px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .primary { color: #fff; background: var(--green); }
+    .primary:hover { background: var(--green-dark); }
+    .secondary { color: var(--green-dark); background: var(--green-soft); border: 1px solid #cbe8cf; }
+    .danger { color: #fff; background: var(--red); }
+    .ghost { color: var(--muted); background: #fff; border: 1px solid var(--line); }
+
+    .add-card, .status-card, .section-card, .recipe-card, .modal-card, .planner-shell, .shopping-list, .trace-panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .add-card { padding: 16px; margin-bottom: 16px; }
+
+    .add-form {
+      display: grid;
+      grid-template-columns: minmax(160px, 1.3fr) minmax(90px, 0.7fr) minmax(120px, 0.8fr) minmax(130px, 0.8fr) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field { display: grid; gap: 6px; }
+
+    label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 40px;
+      padding: 9px 11px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    input:disabled {
+      color: var(--muted);
+      background: #f4f7f5;
+    }
+
+    .hidden { display: none; }
+
+    .status-card {
+      display: none;
+      padding: 13px 15px;
+      margin: 16px 0;
+      color: var(--muted);
+    }
+
+    .status-card.show { display: block; }
+    .status-card.ok { color: var(--green-dark); background: var(--green-soft); border-color: #cbe8cf; }
+    .status-card.error { color: #9b2822; background: var(--red-soft); border-color: #ffc7c2; }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .section-card {
+      min-height: 220px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: #f1f8f2;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head h3 { margin: 0; }
+
+    .count-pill, .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+    }
+
+    .badge {
+      min-height: 22px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .count-pill {
+      min-width: 28px;
+      min-height: 24px;
+      padding: 3px 8px;
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .count-pill { color: var(--green-dark); background: #fff; border: 1px solid #cbe8cf; }
+
+    .item-list { display: grid; gap: 10px; padding: 14px; }
+
+    .food-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .food-name { margin: 0 0 3px; font-weight: 900; }
+    .food-meta { color: var(--muted); font-size: 0.88rem; }
+
+    .category {
+      display: inline-flex;
+      margin-top: 8px;
+      padding: 3px 7px;
+      color: var(--muted);
+      background: #f4f7f5;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: capitalize;
+    }
+
+    .delete-button {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      color: var(--red);
+      background: var(--red-soft);
+      border-radius: 7px;
+      font-weight: 900;
+    }
+
+    .empty-state {
+      padding: 16px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+    }
+
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .skeleton-card {
+      min-height: 360px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .skeleton-image,
+    .skeleton-line {
+      background: linear-gradient(90deg, #edf2ee 25%, #f7faf8 37%, #edf2ee 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.25s ease-in-out infinite;
+    }
+
+    .skeleton-image {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+    }
+
+    .skeleton-body {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 999px;
+    }
+
+    .skeleton-line.short { width: 46%; }
+    .skeleton-line.medium { width: 72%; }
+
+    @keyframes shimmer {
+      0% { background-position: 100% 0; }
+      100% { background-position: 0 0; }
+    }
+
+    .recipe-card {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .recipe-card.green { border-top: 5px solid var(--green); }
+    .recipe-card.yellow { border-top: 5px solid var(--yellow); }
+    .recipe-card.red { border-top: 5px solid var(--red); }
+
+    .recipe-image {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      background: #edf4ef;
+    }
+
+    .recipe-body {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .recipe-title-row {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .recipe-title { margin: 0; font-size: 1rem; }
+    .badge.green { color: #166534; background: #dcfce7; }
+    .badge.yellow { color: #854d0e; background: #fef9c3; }
+    .badge.red { color: #991b1b; background: #fee2e2; }
+
+    .mini-list {
+      margin: 6px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .sub-box {
+      padding: 10px;
+      color: var(--muted);
+      background: #f8fbf9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .sub-box strong { display: block; color: var(--ink); margin-bottom: 4px; }
+
+    .planner-shell {
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    .planner-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .planner-actions {
+      display: grid;
+      gap: 8px;
+      justify-items: end;
+    }
+
+    .planner-actions .secondary {
+      min-height: 34px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+    }
+
+    .loading-steps, .agent-steps {
+      display: grid;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .step {
+      padding: 10px 12px;
+      color: var(--muted);
+      background: #f8fbf9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.92rem;
+    }
+
+    .step.active {
+      color: var(--green-dark);
+      background: var(--green-soft);
+      border-color: #cbe8cf;
+      font-weight: 800;
+    }
+
+    .meal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .meal-card {
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .meal-card img {
+      width: 100%;
+      aspect-ratio: 1 / 0.7;
+      object-fit: cover;
+      background: #edf4ef;
+    }
+
+    .meal-body {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .meal-day {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .meal-name {
+      margin: 0;
+      font-size: 0.94rem;
+      line-height: 1.25;
+    }
+
+    .reasoning {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .shopping-list {
+      padding: 14px;
+      margin-top: 16px;
+      box-shadow: none;
+    }
+
+    .shopping-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .shopping-list h3, .trace-panel summary {
+      margin: 0;
+      font-weight: 900;
+    }
+
+    .shopping-groups {
+      display: grid;
+      gap: 14px;
+    }
+
+    .shopping-group {
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .shopping-group:first-child { padding-top: 0; border-top: 0; }
+
+    .shopping-group h4 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+    }
+
+    .shopping-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+
+    .shopping-item {
+      padding: 10px;
+      background: #f8fbf9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .shopping-item p {
+      margin: 0;
+    }
+
+    .shopping-item small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+    }
+
+    .planner-summary {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .trace-panel {
+      padding: 12px 14px;
+      margin-top: 14px;
+      box-shadow: none;
+    }
+
+    .trace-panel summary { cursor: pointer; }
+
+    .trace-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .trace-item {
+      padding: 10px;
+      background: #f8fbf9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .trace-item code {
+      display: inline-block;
+      margin-bottom: 4px;
+      color: var(--green-dark);
+      font-weight: 900;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(31, 41, 51, 0.45);
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal-card {
+      width: min(580px, 100%);
+      max-height: min(820px, calc(100vh - 36px));
+      overflow: auto;
+      padding: 18px;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .modal-head h2 { margin: 0; }
+
+    .close-button {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      color: var(--muted);
+      background: #f4f7f5;
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .settings-form, .preview-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .preview-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      color: var(--ink);
+      background: #f8fbf9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.94rem;
+    }
+
+    .preview-item input { width: auto; min-height: auto; margin-top: 3px; }
+    .warning { color: #9b2822; font-weight: 900; }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 80;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 220px;
+      max-width: min(360px, calc(100vw - 36px));
+      padding: 10px 16px;
+      color: #fff;
+      background: #1a1a1a;
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(31, 41, 51, 0.22);
+      font-size: 0.875rem;
+      animation: toastIn 180ms ease-out;
+    }
+
+    .toast.leaving {
+      animation: toastOut 180ms ease-in forwards;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(10px); }
+    }
+
+    @media (max-width: 980px) {
+      .recipe-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .meal-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .inventory-grid { grid-template-columns: 1fr; }
+      .add-form { grid-template-columns: 1fr 1fr; }
+      .add-form button { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 720px) {
+      .topbar { flex-wrap: wrap; }
+      .tabs { order: 3; width: 100%; }
+      .tab-button { flex: 1; }
+      .recipe-grid { grid-template-columns: 1fr; }
+      .household-bar, .toolbar, .recipes-head, .planner-head, .add-form { grid-template-columns: 1fr; }
+      .planner-actions { justify-items: stretch; }
+      .join-row, .actions { justify-content: stretch; }
+      .join-row input, .actions button, .actions label, .add-form button, .planner-head button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <h1>Scanora</h1>
+      </div>
+      <nav class="tabs" aria-label="Main tabs">
+        <button class="tab-button active" data-tab="inventory">My Inventory</button>
+        <button class="tab-button" data-tab="recipes">Recipes</button>
+      </nav>
+      <button class="settings-button" id="openSettings" title="Settings" aria-label="Settings">&#9881;</button>
+    </header>
+
+    <main>
+      <section class="household-bar" aria-label="Household setup">
+        <div class="household-info" id="householdInfo"></div>
+        <div class="join-row">
+          <input id="inviteInput" type="text" placeholder="INVITE" maxlength="12" autocomplete="off" />
+          <button class="ghost" type="button" id="joinHousehold">Join</button>
+          <button class="secondary" type="button" id="startHousehold">Start</button>
+          <button class="secondary hidden" type="button" id="shareHousehold">Share</button>
+        </div>
+      </section>
+
+      <section class="tab-panel active" id="inventoryPanel">
+        <div class="toolbar">
+          <div>
+            <h2>My Inventory</h2>
+            <p>Track what is in your fridge, pantry, and freezer.</p>
+          </div>
+          <div class="actions">
+            <label class="secondary" for="receiptInput">Upload Receipt</label>
+            <input class="hidden" id="receiptInput" type="file" accept="image/*" />
+          </div>
+        </div>
+
+        <div class="add-card">
+          <form class="add-form" id="addItemForm">
+            <div class="field">
+              <label for="itemName">Name</label>
+              <input id="itemName" type="text" placeholder="Milk" autocomplete="off" required />
+            </div>
+            <div class="field">
+              <label for="itemQuantity">Quantity</label>
+              <input id="itemQuantity" type="number" min="0" step="0.01" placeholder="1" required />
+            </div>
+            <div class="field">
+              <label for="itemUnit">Unit</label>
+              <input id="itemUnit" type="text" placeholder="carton" autocomplete="off" required />
+            </div>
+            <div class="field">
+              <label for="itemSection">Section</label>
+              <select id="itemSection" required>
+                <option value="fridge">Fridge</option>
+                <option value="pantry">Pantry</option>
+                <option value="freezer">Freezer</option>
+              </select>
+            </div>
+            <button class="primary" type="submit">Add Item</button>
+          </form>
+        </div>
+
+        <div class="status-card" id="inventoryStatus"></div>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+      </section>
+
+      <section class="tab-panel" id="recipesPanel">
+        <div class="recipes-head">
+          <div>
+            <h2>Recipes</h2>
+            <p>Ideas sorted by what you can make right now.</p>
+          </div>
+          <button class="secondary" id="refreshRecipes">Refresh Recipes</button>
+        </div>
+        <div class="status-card" id="recipeStatus"></div>
+        <div class="recipe-grid" id="recipeGrid"></div>
+
+        <section class="planner-shell" aria-labelledby="plannerTitle">
+          <div class="planner-head">
+            <div>
+              <h2 id="plannerTitle">Weekly Meal Planner</h2>
+              <p>Scanora AI Agent reads your inventory, searches recipes, checks details, and builds a week.</p>
+            </div>
+            <div class="planner-actions">
+              <button class="primary" type="button" id="planWeek">Plan My Week with AI</button>
+              <button class="secondary hidden" type="button" id="regeneratePlan">Regenerate Plan</button>
+            </div>
+          </div>
+          <div class="status-card" id="plannerStatus"></div>
+          <div class="loading-steps hidden" id="loadingSteps"></div>
+          <div class="agent-steps hidden" id="agentSteps"></div>
+          <div id="mealPlanOutput"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="settingsTitle">Settings</h2>
+        <button class="close-button" data-close-modal="settingsModal" aria-label="Close settings">x</button>
+      </div>
+      <form class="settings-form" id="settingsForm">
+        <div class="field">
+          <label for="backendStatus">Backend status</label>
+          <input id="backendStatus" type="text" value="Checking..." disabled />
+        </div>
+        <div class="field">
+          <label for="spoonacularKey">SPOONACULAR_API_KEY</label>
+          <input id="spoonacularKey" type="password" value="Configured in Vercel" disabled />
+        </div>
+        <div class="field">
+          <label for="anthropicKey">ANTHROPIC_API_KEY</label>
+          <input id="anthropicKey" type="password" value="Configured in Vercel" disabled />
+        </div>
+        <div class="field">
+          <label for="supabaseUrl">SUPABASE_URL</label>
+          <input id="supabaseUrl" type="password" value="Configured in Vercel" disabled />
+        </div>
+        <div class="field">
+          <label for="supabaseServiceKey">SUPABASE_SERVICE_KEY</label>
+          <input id="supabaseServiceKey" type="password" value="Configured in Vercel" disabled />
+        </div>
+        <p class="hint">Secrets stay server-side in Vercel environment variables. The browser only calls Scanora's own API routes.</p>
+        <div class="modal-actions">
+          <button class="primary" type="submit">Done</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-card preview-card">
+      <div class="modal-head">
+        <h2 id="previewTitle">Detected Items</h2>
+        <button class="close-button" data-close-modal="previewModal" aria-label="Close preview">x</button>
+      </div>
+      <div class="preview-list" id="previewList"></div>
+      <details class="trace-panel" id="receiptTracePanel">
+        <summary>Scanora AI Agent Trace</summary>
+        <div class="trace-list" id="receiptTrace"></div>
+      </details>
+      <div class="modal-actions">
+        <button class="ghost" type="button" data-close-modal="previewModal">Cancel</button>
+        <button class="primary" type="button" id="confirmDetected">Add Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
+  <script>
+    const HOUSEHOLD_ID_KEY = "scanora_household_id";
+    const HOUSEHOLD_INVITE_KEY = "scanora_invite_code";
+    const LEGACY_INVENTORY_KEY = "fridgechef_inventory";
+    const sections = ["fridge", "pantry", "freezer"];
+    const sectionLabels = { fridge: "Fridge", pantry: "Pantry", freezer: "Freezer" };
+    const categoryKeywords = {
+      produce: ["apple", "banana", "berry", "berries", "lettuce", "spinach", "tomato", "onion", "garlic", "potato", "carrot", "pepper", "broccoli", "avocado", "lemon", "lime", "herb", "cilantro", "parsley"],
+      dairy: ["milk", "cheese", "yogurt", "cream", "butter", "eggs", "egg", "mozzarella", "cheddar", "parmesan"],
+      meat: ["chicken", "beef", "pork", "turkey", "fish", "salmon", "tuna", "shrimp", "bacon", "sausage", "ham"],
+      grains: ["rice", "pasta", "bread", "flour", "oats", "quinoa", "cereal", "tortilla", "noodle"],
+      condiments: ["oil", "vinegar", "sauce", "ketchup", "mustard", "mayo", "mayonnaise", "dressing", "salsa", "soy", "salt", "pepper", "spice"]
+    };
+
+    let household = {
+      id: localStorage.getItem(HOUSEHOLD_ID_KEY) || "",
+      invite_code: localStorage.getItem(HOUSEHOLD_INVITE_KEY) || "",
+      name: "My Household"
+    };
+    let inventory = [];
+    let detectedItems = [];
+    let receiptAgentSteps = [];
+    let recipesLoading = false;
+    let mealPlanGenerated = false;
+
+    const els = {
+      householdInfo: document.getElementById("householdInfo"),
+      inviteInput: document.getElementById("inviteInput"),
+      startHousehold: document.getElementById("startHousehold"),
+      joinHousehold: document.getElementById("joinHousehold"),
+      shareHousehold: document.getElementById("shareHousehold"),
+      inventoryGrid: document.getElementById("inventoryGrid"),
+      recipeGrid: document.getElementById("recipeGrid"),
+      inventoryStatus: document.getElementById("inventoryStatus"),
+      recipeStatus: document.getElementById("recipeStatus"),
+      plannerStatus: document.getElementById("plannerStatus"),
+      addItemForm: document.getElementById("addItemForm"),
+      receiptInput: document.getElementById("receiptInput"),
+      settingsModal: document.getElementById("settingsModal"),
+      previewModal: document.getElementById("previewModal"),
+      settingsForm: document.getElementById("settingsForm"),
+      backendStatus: document.getElementById("backendStatus"),
+      previewList: document.getElementById("previewList"),
+      receiptTrace: document.getElementById("receiptTrace"),
+      confirmDetected: document.getElementById("confirmDetected"),
+      planWeek: document.getElementById("planWeek"),
+      regeneratePlan: document.getElementById("regeneratePlan"),
+      loadingSteps: document.getElementById("loadingSteps"),
+      agentSteps: document.getElementById("agentSteps"),
+      mealPlanOutput: document.getElementById("mealPlanOutput"),
+      toastStack: document.getElementById("toastStack")
+    };
+
+    function cleanName(value) {
+      return String(value || "").trim();
+    }
+
+    function normalizeIngredient(value) {
+      return cleanName(value).toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
+    }
+
+    function assignCategory(name) {
+      const normalized = normalizeIngredient(name);
+      for (const [category, words] of Object.entries(categoryKeywords)) {
+        if (words.some((word) => normalized.includes(word))) return category;
+      }
+      return "other";
+    }
+
+    function normalizeSection(section) {
+      return sections.includes(section) ? section : "pantry";
+    }
+
+    function displaySection(section) {
+      const value = String(section || "").toLowerCase();
+      return normalizeSection(value === "other" ? "pantry" : value);
+    }
+
+    function displayCategory(category) {
+      const value = String(category || "").trim().toLowerCase();
+      if (!value || value === "other") return "Pantry";
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function formatAddedDate(dateString) {
+      if (!dateString) return "";
+      const isoDate = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      const date = isoDate
+        ? new Date(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3]))
+        : new Date(dateString);
+      if (Number.isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showStatus(element, message, type = "") {
+      element.textContent = message;
+      element.className = `status-card show ${type}`.trim();
+    }
+
+    function clearStatus(element) {
+      element.textContent = "";
+      element.className = "status-card";
+    }
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      els.toastStack.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add("leaving");
+        setTimeout(() => toast.remove(), 180);
+      }, 2500);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("show");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("show");
+    }
+
+    async function parseAPIResponse(response, label) {
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+      if (!response.ok) {
+        const detail = data?.error?.message || data?.error || data?.message || `${response.status} ${response.statusText}`;
+        throw new Error(`${label} failed: ${detail}`);
+      }
+      return data;
+    }
+
+    function friendlyAPIError(error, action) {
+      const message = error?.message || String(error);
+      if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
+        return `Scanora could not complete ${action}. Check that the Vercel API routes and environment variables are available.`;
+      }
+      return message;
+    }
+
+    function hasHousehold() {
+      return Boolean(household.id);
+    }
+
+    function persistHousehold(data) {
+      household = {
+        id: data.id,
+        invite_code: data.invite_code || "",
+        name: data.name || "My Household"
+      };
+      localStorage.setItem(HOUSEHOLD_ID_KEY, household.id);
+      localStorage.setItem(HOUSEHOLD_INVITE_KEY, household.invite_code);
+      renderHouseholdBar();
+    }
+
+    function renderHouseholdBar() {
+      if (!hasHousehold()) {
+        els.householdInfo.innerHTML = `
+          <p class="household-title">Start a household to sync inventory and run Scanora AI Agent workflows.</p>
+        `;
+        els.startHousehold.classList.remove("hidden");
+        els.shareHousehold.classList.add("hidden");
+        return;
+      }
+
+      els.householdInfo.innerHTML = `
+        <p class="household-title">${escapeHTML(household.name)}</p>
+        <span class="invite-code">${escapeHTML(household.invite_code || "READY")}</span>
+      `;
+      els.startHousehold.classList.add("hidden");
+      els.shareHousehold.classList.remove("hidden");
+    }
+
+    async function ensureHousehold() {
+      if (hasHousehold()) return true;
+      showStatus(els.inventoryStatus, "Start or join a household first.", "error");
+      return false;
+    }
+
+    async function startHousehold() {
+      showStatus(els.inventoryStatus, "Creating household...", "ok");
+      try {
+        const response = await fetch("/api/household", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "My Household" })
+        });
+        const data = await parseAPIResponse(response, "Household creation");
+        persistHousehold(data);
+        await migrateLegacyInventory();
+        await loadInventory();
+        showStatus(els.inventoryStatus, "Household ready. Inventory now syncs through Supabase.", "ok");
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "household creation"), "error");
+      }
+    }
+
+    async function joinHousehold() {
+      const inviteCode = cleanName(els.inviteInput.value).toUpperCase();
+      if (!inviteCode) {
+        showStatus(els.inventoryStatus, "Enter an invite code to join.", "error");
+        return;
+      }
+
+      showStatus(els.inventoryStatus, "Joining household...", "ok");
+      try {
+        const response = await fetch(`/api/household?invite_code=${encodeURIComponent(inviteCode)}`);
+        const data = await parseAPIResponse(response, "Household lookup");
+        persistHousehold(data);
+        els.inviteInput.value = "";
+        await loadInventory();
+        showStatus(els.inventoryStatus, "Joined household.", "ok");
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "household lookup"), "error");
+      }
+    }
+
+    async function shareHousehold() {
+      const text = household.invite_code || household.id;
+      try {
+        await navigator.clipboard.writeText(text);
+        const previous = els.shareHousehold.textContent;
+        els.shareHousehold.textContent = "Copied! ✓";
+        setTimeout(() => {
+          els.shareHousehold.textContent = previous || "Share";
+        }, 2000);
+        showToast("✓ Invite code copied");
+        showStatus(els.inventoryStatus, "Invite code copied.", "ok");
+      } catch {
+        showStatus(els.inventoryStatus, `Invite code: ${text}`, "ok");
+      }
+    }
+
+    function mapRowToItem(row) {
+      return {
+        id: row.id,
+        name: row.name,
+        quantity: Number(row.quantity) || 1,
+        unit: row.unit || "",
+        section: normalizeSection(row.category),
+        category: row.category || assignCategory(row.name),
+        dateAdded: row.added_at ? String(row.added_at).slice(0, 10) : todayISO()
+      };
+    }
+
+    async function loadInventory() {
+      if (!hasHousehold()) {
+        inventory = [];
+        renderInventory();
+        showStatus(els.inventoryStatus, "Start or join a household to sync inventory.", "");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/inventory?household_id=${encodeURIComponent(household.id)}`);
+        const rows = await parseAPIResponse(response, "Inventory load");
+        inventory = rows.map(mapRowToItem);
+        renderInventory();
+        if (!inventory.length) {
+          showStatus(els.inventoryStatus, "Add items manually or upload a receipt image to start building your inventory.", "");
+        } else {
+          clearStatus(els.inventoryStatus);
+        }
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "inventory loading"), "error");
+      }
+    }
+
+    async function addInventoryItems(items) {
+      if (!(await ensureHousehold())) return [];
+
+      const payloadItems = items.map((item) => ({
+        name: cleanName(item.name),
+        quantity: Number(item.quantity) || 1,
+        unit: cleanName(item.unit),
+        category: normalizeSection(item.section || item.category)
+      })).filter((item) => item.name);
+
+      if (!payloadItems.length) return [];
+
+      const response = await fetch("/api/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ household_id: household.id, items: payloadItems })
+      });
+      const rows = await parseAPIResponse(response, "Inventory save");
+      inventory = [...rows.map(mapRowToItem), ...inventory];
+      renderInventory();
+      return rows;
+    }
+
+    async function deleteInventoryItem(id) {
+      const response = await fetch(`/api/inventory?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      await parseAPIResponse(response, "Inventory delete");
+      inventory = inventory.filter((item) => item.id !== id);
+      renderInventory();
+    }
+
+    async function migrateLegacyInventory() {
+      try {
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_INVENTORY_KEY) || "[]");
+        if (!Array.isArray(legacy) || !legacy.length) return;
+        const items = legacy.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+          category: normalizeSection(item.section)
+        }));
+        await fetch("/api/inventory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ household_id: household.id, items })
+        });
+        localStorage.removeItem(LEGACY_INVENTORY_KEY);
+      } catch {
+        showStatus(els.inventoryStatus, "Household was created, but older local inventory could not be migrated.", "error");
+      }
+    }
+
+    function renderInventory() {
+      els.inventoryGrid.innerHTML = "";
+      sections.forEach((section) => {
+        const items = inventory.filter((item) => item.section === section);
+        const card = document.createElement("article");
+        card.className = "section-card";
+        card.innerHTML = `
+          <div class="section-head">
+            <h3>${sectionLabels[section]}</h3>
+            <span class="count-pill">${items.length}</span>
+          </div>
+          <div class="item-list" data-section-list="${section}"></div>
+        `;
+        const list = card.querySelector(".item-list");
+        if (!items.length) {
+          list.innerHTML = `<div class="empty-state">No items yet.</div>`;
+        } else {
+          items.forEach((item) => list.appendChild(renderInventoryItem(item)));
+        }
+        els.inventoryGrid.appendChild(card);
+      });
+    }
+
+    function renderInventoryItem(item) {
+      const node = document.createElement("div");
+      node.className = "food-item";
+      node.innerHTML = `
+        <div class="food-main">
+          <p class="food-name">${escapeHTML(item.name)}</p>
+          <div class="food-meta">${escapeHTML(String(item.quantity))} ${escapeHTML(item.unit)} - added ${escapeHTML(formatAddedDate(item.dateAdded))}</div>
+          <span class="category">${escapeHTML(displayCategory(item.category))}</span>
+        </div>
+        <button class="delete-button" type="button" title="Delete ${escapeHTML(item.name)}" aria-label="Delete ${escapeHTML(item.name)}" data-delete-id="${escapeHTML(item.id)}">x</button>
+      `;
+      return node;
+    }
+
+    async function handleReceiptUpload(file) {
+      if (!file) return;
+      if (!(await ensureHousehold())) return;
+      clearStatus(els.inventoryStatus);
+
+      showStatus(els.inventoryStatus, "Scanning receipt with Scanora AI Agent...", "ok");
+      try {
+        const base64 = await fileToBase64(file);
+        const response = await fetch("/api/scan-receipt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            image_base64: base64,
+            media_type: file.type || "image/jpeg",
+            household_id: household.id
+          })
+        });
+        const data = await parseAPIResponse(response, "Receipt scan");
+        detectedItems = sanitizeDetectedItems(data.items || []);
+        receiptAgentSteps = data.agent_steps || [];
+        if (!detectedItems.length) {
+          showStatus(els.inventoryStatus, "Scanora AI Agent did not find food items on that receipt.", "error");
+          return;
+        }
+        renderPreview();
+        renderTrace(els.receiptTrace, receiptAgentSteps);
+        clearStatus(els.inventoryStatus);
+        openModal("previewModal");
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "receipt scanning"), "error");
+      } finally {
+        els.receiptInput.value = "";
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function sanitizeDetectedItems(items) {
+      if (!Array.isArray(items)) return [];
+      return items.map((item) => {
+        const name = cleanName(item.name);
+        return {
+          name,
+          quantity: Number(item.quantity) || 1,
+          unit: cleanName(item.unit),
+          section: displaySection(item.category),
+          confidence: Number(item.confidence) || 0,
+          raw_text: cleanName(item.raw_text)
+        };
+      }).filter((item) => item.name);
+    }
+
+    function renderPreview() {
+      els.previewList.innerHTML = "";
+      detectedItems.forEach((item, index) => {
+        const node = document.createElement("label");
+        node.className = "preview-item";
+        const warning = item.confidence < 0.7 ? `<span class="warning">Low confidence</span><br />` : "";
+        node.innerHTML = `
+          <input type="checkbox" checked data-preview-index="${index}" />
+          <span>
+            <strong>${escapeHTML(item.name)}</strong><br />
+            ${warning}${escapeHTML(String(item.quantity))} ${escapeHTML(item.unit || "item")} - ${escapeHTML(sectionLabels[displaySection(item.section)])} - confidence ${Math.round(item.confidence * 100)}%
+            ${item.raw_text ? `<br /><small>Raw: ${escapeHTML(item.raw_text)}</small>` : ""}
+          </span>
+        `;
+        els.previewList.appendChild(node);
+      });
+    }
+
+    async function fetchRecipes() {
+      if (recipesLoading) return;
+      if (!(await ensureHousehold())) return;
+      if (!inventory.length) {
+        showStatus(els.recipeStatus, "Add a few ingredients to your inventory and Scanora will suggest recipes.", "");
+        els.recipeGrid.innerHTML = "";
+        return;
+      }
+
+      recipesLoading = true;
+      showStatus(els.recipeStatus, "Finding recipes that match your inventory...", "ok");
+      renderRecipeSkeletons();
+
+      try {
+        const response = await fetch(`/api/recipes?household_id=${encodeURIComponent(household.id)}&number=12`);
+        const recipes = await parseAPIResponse(response, "Recipe fetch");
+        const visibleRecipes = (recipes || []).slice(0, 12);
+        renderRecipes(visibleRecipes);
+        showStatus(els.recipeStatus, `Showing ${visibleRecipes.length} recipe suggestions.`, "ok");
+      } catch (error) {
+        showStatus(els.recipeStatus, friendlyAPIError(error, "recipe fetching"), "error");
+      } finally {
+        recipesLoading = false;
+      }
+    }
+
+    function renderRecipeSkeletons() {
+      els.recipeGrid.innerHTML = Array.from({ length: 6 }, () => `
+        <article class="skeleton-card" aria-hidden="true">
+          <div class="skeleton-image"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function getRecipeStatus(recipe) {
+      const missed = Number(recipe.missedIngredientCount || recipe.missedIngredients?.length || 0);
+      if (missed === 0) return "green";
+      if (missed <= 3) return "yellow";
+      return "red";
+    }
+
+    function getBadgeInfo(status, missingCount = 0) {
+      if (status === "green") return { className: "green", label: "Ready ✓" };
+      if (status === "yellow") return { className: "yellow", label: "Almost" };
+      return { className: "red", label: `Missing ${missingCount} item${missingCount === 1 ? "" : "s"}` };
+    }
+
+    function renderRecipes(recipes) {
+      els.recipeGrid.innerHTML = "";
+      if (!recipes.length) {
+        showStatus(els.recipeStatus, "No recipe matches came back. Try adding more inventory items or refreshing later.", "");
+        return;
+      }
+
+      recipes.forEach((recipe) => {
+        const status = getRecipeStatus(recipe);
+        const card = document.createElement("article");
+        card.className = `recipe-card ${status}`;
+        const sourceUrl = `https://spoonacular.com/recipes/${encodeURIComponent(recipe.title || "recipe")}-${recipe.id}`;
+        const missed = recipe.missedIngredients || [];
+        const badge = getBadgeInfo(status, Number(recipe.missedIngredientCount || missed.length || 0));
+        const used = recipe.usedIngredients || [];
+        const missingHTML = missed.length
+          ? `<div><strong>Missing</strong><ul class="mini-list">${missed.slice(0, 6).map((item) => `<li>${escapeHTML(item.name || item.original || item.originalName || "Ingredient")}</li>`).join("")}</ul></div>`
+          : `<div class="sub-box"><strong>Good to cook</strong>You have the required ingredients Scanora could identify.</div>`;
+        const usedHTML = used.length
+          ? `<div><strong>Uses from inventory</strong><ul class="mini-list">${used.slice(0, 5).map((item) => `<li>${escapeHTML(item.name || item.original || item.originalName || "Ingredient")}</li>`).join("")}</ul></div>`
+          : "";
+
+        card.innerHTML = `
+          <img class="recipe-image" src="${escapeHTML(recipe.image || "")}" alt="${escapeHTML(recipe.title || "Recipe image")}" />
+          <div class="recipe-body">
+            <div class="recipe-title-row">
+              <h3 class="recipe-title">${escapeHTML(recipe.title || "Untitled recipe")}</h3>
+              <span class="badge ${badge.className}">${escapeHTML(badge.label)}</span>
+            </div>
+            ${usedHTML}
+            ${missingHTML}
+            <a href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">View Full Recipe</a>
+          </div>
+        `;
+        els.recipeGrid.appendChild(card);
+      });
+    }
+
+    async function planWeek(confirmReplace = false) {
+      if (confirmReplace && mealPlanGenerated && !confirm("Generate a new plan? This will replace the current one.")) return;
+      if (!(await ensureHousehold())) return;
+      if (!inventory.length) {
+        showStatus(els.plannerStatus, "Add inventory items before running the meal planner.", "error");
+        return;
+      }
+
+      els.planWeek.disabled = true;
+      els.mealPlanOutput.innerHTML = "";
+      els.agentSteps.innerHTML = "";
+      els.agentSteps.classList.add("hidden");
+      clearStatus(els.plannerStatus);
+      showLoadingSteps();
+
+      try {
+        const response = await fetch("/api/meal-plan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ household_id: household.id })
+        });
+        const data = await parseAPIResponse(response, "Meal planning");
+        await animateAgentSteps(data.agent_steps || []);
+        renderMealPlan(data);
+        mealPlanGenerated = true;
+        els.regeneratePlan.classList.remove("hidden");
+        showToast("✓ Meal plan ready");
+        showStatus(els.plannerStatus, `Meal plan built in ${Math.round((data.duration_ms || 0) / 1000)}s.`, "ok");
+      } catch (error) {
+        showStatus(els.plannerStatus, friendlyAPIError(error, "meal planning"), "error");
+      } finally {
+        els.loadingSteps.classList.add("hidden");
+        els.planWeek.disabled = false;
+      }
+    }
+
+    function showLoadingSteps() {
+      const steps = [
+        "Reading your inventory...",
+        "Searching recipe candidates...",
+        "Evaluating options...",
+        "Building your plan..."
+      ];
+      els.loadingSteps.classList.remove("hidden");
+      els.loadingSteps.innerHTML = steps.map((step, index) => `<div class="step ${index === 0 ? "active" : ""}">${escapeHTML(step)}</div>`).join("");
+      steps.forEach((_, index) => {
+        setTimeout(() => {
+          [...els.loadingSteps.children].forEach((node, childIndex) => node.classList.toggle("active", childIndex === index));
+        }, index * 900);
+      });
+    }
+
+    async function animateAgentSteps(steps) {
+      els.agentSteps.classList.remove("hidden");
+      els.agentSteps.innerHTML = "";
+      for (const step of steps) {
+        const node = document.createElement("div");
+        node.className = "step active";
+        node.textContent = `${step.tool || "Scanora AI Agent"}: ${step.input_summary || step.stop_reason || "working"} -> ${step.output_summary || "done"}`;
+        els.agentSteps.appendChild(node);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+    }
+
+    function renderMealPlan(data) {
+      const plan = data.plan || [];
+      const shoppingList = data.shopping_list || [];
+      if (!plan.length) {
+        els.mealPlanOutput.innerHTML = `<div class="sub-box"><strong>No plan returned</strong>Scanora AI Agent finished without finalizing a 7-day plan.</div>`;
+        return;
+      }
+
+      const cards = plan.map((meal) => {
+        const feasibility = meal.feasibility || "yellow";
+        const missingCount = Array.isArray(meal.missing_ingredients) ? meal.missing_ingredients.length : 0;
+        const badge = getBadgeInfo(feasibility, missingCount);
+        return `
+          <article class="meal-card">
+            <img src="${escapeHTML(meal.recipe_image || "")}" alt="${escapeHTML(meal.recipe_name || "Meal image")}" />
+            <div class="meal-body">
+              <p class="meal-day">${escapeHTML(meal.day)}</p>
+              <h3 class="meal-name">${escapeHTML(meal.recipe_name)}</h3>
+              <span class="badge ${badge.className}">${escapeHTML(badge.label)}</span>
+              <p class="reasoning">${escapeHTML(meal.reasoning || "")}</p>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      const shopping = renderShoppingGroups(shoppingList);
+
+      els.mealPlanOutput.innerHTML = `
+        <div class="meal-grid">${cards}</div>
+        <section class="shopping-list">
+          <div class="shopping-head">
+            <h3>Shopping List</h3>
+            <button class="secondary" type="button" id="copyShoppingList">Copy List 📋</button>
+          </div>
+          ${shopping}
+        </section>
+        <p class="planner-summary">${escapeHTML(data.summary || "")}</p>
+        <details class="trace-panel">
+          <summary>Scanora AI Agent Reasoning Log</summary>
+          <div class="trace-list" id="plannerTrace"></div>
+        </details>
+      `;
+      renderTrace(document.getElementById("plannerTrace"), data.agent_steps || []);
+      const copyButton = document.getElementById("copyShoppingList");
+      if (copyButton) {
+        copyButton.addEventListener("click", () => copyShoppingList(shoppingList, copyButton));
+      }
+    }
+
+    const shoppingCategoryConfig = {
+      produce: { label: "🥬 Produce", keywords: ["onion", "garlic", "tomato", "potato", "pepper", "lemon", "kale", "spinach", "parsley", "basil", "mushroom", "eggplant"] },
+      meat: { label: "🥩 Meat & Protein", keywords: ["chicken", "beef", "turkey", "pork", "sausage", "roast", "ground"] },
+      dairy: { label: "🧀 Dairy", keywords: ["milk", "cheese", "butter", "cream", "yogurt"] },
+      pantry: { label: "🥫 Pantry", keywords: ["pasta", "rice", "oil", "sauce", "can", "stock", "broth", "flour", "sugar", "spice", "salt", "thyme", "oregano", "cumin", "coriander", "chili", "tomato paste"] },
+      other: { label: "📦 Other", keywords: [] }
+    };
+
+    function getShoppingCategory(item) {
+      const supplied = String(item.category || "").toLowerCase();
+      if (shoppingCategoryConfig[supplied]) return supplied;
+      const ingredient = normalizeIngredient(item.ingredient);
+      for (const [category, config] of Object.entries(shoppingCategoryConfig)) {
+        if (category === "other") continue;
+        if (config.keywords.some((keyword) => ingredient.includes(keyword))) return category;
+      }
+      return "other";
+    }
+
+    function groupShoppingItems(items) {
+      const groups = { produce: [], meat: [], dairy: [], pantry: [], other: [] };
+      items.forEach((item) => {
+        groups[getShoppingCategory(item)].push(item);
+      });
+      return groups;
+    }
+
+    function getShoppingQuantity(item) {
+      return cleanName(item.quantity || item.amount || item.unit_amount || "");
+    }
+
+    function renderShoppingGroups(items) {
+      if (!items.length) return `<p class="hint">No extra shopping needed.</p>`;
+      const groups = groupShoppingItems(items);
+      const html = Object.entries(groups).map(([category, groupItems]) => {
+        if (!groupItems.length) return "";
+        const entries = groupItems.map((item) => {
+          const quantity = getShoppingQuantity(item);
+          const recipes = Array.isArray(item.needed_for_recipes) ? item.needed_for_recipes.filter(Boolean) : [];
+          return `
+            <div class="shopping-item">
+              <p><strong>${escapeHTML(item.ingredient || "Ingredient")}</strong>${quantity ? ` — ${escapeHTML(quantity)}` : ""}</p>
+              ${recipes.length ? `<small>needed for: ${escapeHTML(recipes.join(", "))}</small>` : ""}
+            </div>
+          `;
+        }).join("");
+        return `
+          <section class="shopping-group">
+            <h4>${shoppingCategoryConfig[category].label}</h4>
+            <div class="shopping-items">${entries}</div>
+          </section>
+        `;
+      }).join("");
+      return `<div class="shopping-groups">${html}</div>`;
+    }
+
+    async function copyShoppingList(items, button) {
+      const groups = groupShoppingItems(items);
+      const lines = [];
+      Object.entries(groups).forEach(([category, groupItems]) => {
+        if (!groupItems.length) return;
+        lines.push(shoppingCategoryConfig[category].label);
+        groupItems.forEach((item) => {
+          const quantity = getShoppingQuantity(item);
+          const recipes = Array.isArray(item.needed_for_recipes) && item.needed_for_recipes.length
+            ? ` (needed for: ${item.needed_for_recipes.join(", ")})`
+            : "";
+          lines.push(`- ${item.ingredient || "Ingredient"}${quantity ? ` - ${quantity}` : ""}${recipes}`);
+        });
+        lines.push("");
+      });
+
+      try {
+        await navigator.clipboard.writeText(lines.join("\n").trim());
+        const previous = button.textContent;
+        button.textContent = "Copied! ✓";
+        showToast("✓ Shopping list copied");
+        setTimeout(() => {
+          button.textContent = previous || "Copy List 📋";
+        }, 2000);
+      } catch (error) {
+        showStatus(els.plannerStatus, friendlyAPIError(error, "shopping list copy"), "error");
+      }
+    }
+
+    function renderTrace(container, steps) {
+      container.innerHTML = "";
+      if (!steps.length) {
+        container.innerHTML = `<div class="trace-item">No Scanora AI Agent trace returned.</div>`;
+        return;
+      }
+      steps.forEach((step) => {
+        const node = document.createElement("div");
+        node.className = "trace-item";
+        const receiptFinalize = step.tool === "finalize_receipt_items";
+        const receiptAnalyze = !step.tool && Array.isArray(step.content_types);
+        const label = receiptFinalize
+          ? "Finalized receipt items"
+          : receiptAnalyze
+            ? "Analyzing receipt image..."
+            : step.tool || step.stop_reason || `step ${step.step}`;
+        const output = receiptFinalize
+          ? `Extracted ${step.items_extracted || 0} items · ${step.items_filtered || 0} filtered out · ${step.ambiguous_count || 0} flagged low confidence`
+          : receiptAnalyze
+            ? "Scanora AI Agent inspected the image and prepared a structured tool call."
+            : step.output_summary || `content: ${(step.content_types || []).join(", ") || "n/a"}`;
+        node.innerHTML = `
+          <code>${escapeHTML(String(step.step || ""))}. ${escapeHTML(label)}</code>
+          <div>${escapeHTML(step.input_summary || "")}</div>
+          <div>${escapeHTML(output)}</div>
+        `;
+        container.appendChild(node);
+      });
+    }
+
+    async function checkBackendStatus() {
+      try {
+        const response = await fetch("/api/household");
+        await parseAPIResponse(response, "Backend status");
+        els.backendStatus.value = "Backend connected";
+      } catch {
+        els.backendStatus.value = "Backend not connected";
+      }
+    }
+
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab-button").forEach((btn) => btn.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(`${button.dataset.tab}Panel`).classList.add("active");
+      });
+    });
+
+    els.startHousehold.addEventListener("click", startHousehold);
+    els.joinHousehold.addEventListener("click", joinHousehold);
+    els.shareHousehold.addEventListener("click", shareHousehold);
+    els.planWeek.addEventListener("click", () => planWeek(false));
+    els.regeneratePlan.addEventListener("click", () => planWeek(true));
+    document.getElementById("refreshRecipes").addEventListener("click", fetchRecipes);
+
+    els.addItemForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const name = cleanName(document.getElementById("itemName").value);
+      try {
+        await addInventoryItems([{
+          name,
+          quantity: document.getElementById("itemQuantity").value,
+          unit: document.getElementById("itemUnit").value,
+          section: document.getElementById("itemSection").value
+        }]);
+        showToast(`✓ ${name} added to ${sectionLabels[document.getElementById("itemSection").value]}`);
+        clearStatus(els.inventoryStatus);
+        els.addItemForm.reset();
+        document.getElementById("itemSection").value = "fridge";
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "inventory save"), "error");
+      }
+    });
+
+    els.inventoryGrid.addEventListener("click", async (event) => {
+      const id = event.target.dataset.deleteId;
+      if (!id) return;
+      try {
+        await deleteInventoryItem(id);
+        showToast("✓ Item removed");
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "inventory delete"), "error");
+      }
+    });
+
+    els.receiptInput.addEventListener("change", (event) => {
+      handleReceiptUpload(event.target.files[0]);
+    });
+
+    document.getElementById("openSettings").addEventListener("click", () => {
+      checkBackendStatus();
+      openModal("settingsModal");
+    });
+
+    document.querySelectorAll("[data-close-modal]").forEach((button) => {
+      button.addEventListener("click", () => closeModal(button.dataset.closeModal));
+    });
+
+    document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) closeModal(backdrop.id);
+      });
+    });
+
+    els.settingsForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      closeModal("settingsModal");
+    });
+
+    els.confirmDetected.addEventListener("click", async () => {
+      const checked = [...els.previewList.querySelectorAll("input[type='checkbox']:checked")];
+      const items = checked.map((box) => detectedItems[Number(box.dataset.previewIndex)]);
+      try {
+        await addInventoryItems(items);
+        closeModal("previewModal");
+        showToast(`✓ ${checked.length} items added to inventory`);
+        showStatus(els.inventoryStatus, `Added ${checked.length} receipt item${checked.length === 1 ? "" : "s"} to inventory.`, "ok");
+      } catch (error) {
+        showStatus(els.inventoryStatus, friendlyAPIError(error, "receipt item save"), "error");
+      }
+    });
+
+    renderHouseholdBar();
+    renderInventory();
+    loadInventory();
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "scanora",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  }
+}
