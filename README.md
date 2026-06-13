@@ -5,8 +5,18 @@
 Scanora helps college students and young adults figure out what to cook based on what they already have. Scan a grocery receipt, build a digital fridge inventory, get recipe suggestions color-coded by feasibility, and let the Scanora AI Agent autonomously plan your entire week of dinners.
 
 ---
+## Youtube Video Walkthrough
 
-## Live Demo
+### Under 10 minute version 
+[https://youtu.be/1npSuRK0br8](https://youtu.be/1npSuRK0br8)
+Slightly sped up, apologies there was a lot to cover. If it's too much just skip through to the parts you are most intrested in, and the github repo should have all the content there. Also if you have any follow up questions, please let me know.
+
+### Full Version
+[https://youtu.be/o4I8V5t_q_c](https://youtu.be/o4I8V5t_q_c)
+
+---
+
+## Live Demo to Use
 
 [https://scanora-six.vercel.app](https://scanora-six.vercel.app)
 
